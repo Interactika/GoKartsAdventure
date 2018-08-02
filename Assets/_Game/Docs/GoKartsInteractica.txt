@@ -1,0 +1,65 @@
+Concepto: Carreras
+Objetivo: Llegar a la meta
+¿Como se logra?: Dar tres vueltas, disparando a tus rivales
+Retos del juego: Obstaculos, permanecer en la pista, cuidarse de los oponentes.
+Lugar de desarrollo: mapa ambientado en la ciudad
+Genero: carreras
+
+Gameplay: Acelerar, frenar, disparar, moverse a traves de los difs. mapas, piruetas, chocarse. (Bornout,MarioKart) (Ej:https://www.youtube.com/watch?v=nXAGVxiXkas)
+Historia: Personajes cabezones que compiten a muerte por la gloria. Los personajes fueron secuestrados para competir por su libertad, el que gane será llevado al siguiente
+nivel, despues de completar los mapas se gana el derecho de irse. Los personajes que no ganan serán tomados como esclavos para servir a la suprema existencia 
+y se volverá a secuestrar otros jugadores y así sucesivamente. Los secuestra una identidad del espacio, que busca entretener su suprema existencia. La ambientacion depende
+de la suprema existencia basada en diferentes locaciones, el será el boss final.
+
+Historia de personaje: El personaje es un veterano de carreras retirado, aburrido de su vida, le llega un WA donde se le explica que ha sido seleccionado  para una 
+carrera cosmica universal final, que puede poner fin a su aburrido estilo de vida, y se reune con la entidad cosmica y lo secuestra una camioneta.
+
+Despues de la primera carrera explicarle al jugador que no se puede ir hasta completar la competencia (grand prix piston)
+[
+Dinero a todos, 
+tener reserva de gasolina y cuando se te acabe ir lento,
+Menu antes de juego para comprar cositas,
+Gasolina que se acaba,
+llamar a la tienda, comprar cosas y que te las aviente el vendedor,
+]
+
+formas de ganar dinero: 
+Por posicion en el marcador (final), 
+por choque (si te chocan te quitan, si tu chocas te dan),
+monedas dentro de la carrera
+
+Mecanicas de juego: PowerUp (disparos)
+
+Plataforma: PC
+
+Mapeo de control: 
+palanca izquierda: mueves
+btn A: Acelerar
+btn B: frenar/retroceder
+btn Y: ver retrovisor
+btn X: confirmar comprar
+LT: 
+RT: Disparar 
+LB: Movilidad / Tienda
+RB: Movilidad / Tienda
+
+Tecnologias y herramientas:
+Unity3D, Blender, Photoshop, Substance Painter
+
+David: Modelado, Diseño de texturas, diseño de mapas                     | Diseño de interfaces / Modelado de personajes / Diseño de niveles
+Roberto: Modelado, programacion, diseño de texturas                      | Diseño de interfaces / Modelado de personajes
+Carlos: Programacion                                                     | Programacion Mecanicas / Programacion navegacion / gasolina / monedas / Sistema de compras
+Mario: Diseño de texturas, diseño de mapas, diseño del comic de historia | Diseño de comic de historia
+Dwigth: Programacion 							 | Programacion Mecanicas / Programacion del player / Sistema de compras
+
+
+Diseño de interfaces: 1era semana
+Programacion del player: 1era semana
+		 Programacion navegacion: 2da semana
+                 Diseño y modelado de personajes: 2da semana
+		 Programacion mecanicas: 2da semana
+					Sistema de compras: 3era semana
+
+Diseño de comic de historia: 3 semanas
+
+
