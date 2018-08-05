@@ -8,6 +8,8 @@ public class Player : MonoBehaviour
 {
 
     [SerializeField]
+    private GameObject[] _Cameras;
+    [SerializeField]
     private PostProcessingBehaviour _PostProcessingBehaviour;
     [SerializeField]
     private Transform _ShootOutPos;
@@ -29,7 +31,7 @@ public class Player : MonoBehaviour
     private CharacterController _Controller;
     private AudioSource _AudioSource;
     private static float decreasedValue = 0.0f;
-    private static float increasedValue = 0.0f;
+    private static float increasedVelocity = 0.0f;
     private static float EnergyIncrement = 0.0f;
     protected float _maxVelocity = 90f;
     private float _Sensitivity = 2f;
@@ -48,13 +50,14 @@ public class Player : MonoBehaviour
     private bool _HasExploded = false;
     private Vector3 _velocity;
     private List<Transform> _Wheels = new List<Transform>();
+    private GameObject _CurrentCamera;
 
 
 
     // Use this for initialization
     void Start()
     {
-        //Cursor.visible = false;   
+        Cursor.visible = false;
         energy = maxEnergy;
         Cursor.lockState = CursorLockMode.Locked;
         _Controller = GetComponent<CharacterController>();
@@ -71,6 +74,8 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        rearview();
+
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -80,9 +85,10 @@ public class Player : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
         _AmmoSlider.value = _currentAmmo;
-        if (Input.GetMouseButton(0) && _currentAmmo > 0)
+        if (Input.GetMouseButton(0) || Input.GetAxis("Shoot") > 0 && _currentAmmo > 0)
         {
             Shoot();
             _Effects[2].SetActive(true);
@@ -107,24 +113,14 @@ public class Player : MonoBehaviour
 
         }
 
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            MisilePowerUp();
-        }
-
-        if (Input.GetKey(KeyCode.Q))
-        {
-            BoostPowerUp();
-        }
-
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            MinesPowerUp();
-        }
-
         CameraRotation();
         CalculateMovement();
 
+        if (Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.JoystickButton2))
+        {
+            //disparar powerUps
+            Debug.Log("PowerUp");
+        }
 
         // cada 5 segundos checar si la energía está en 100
 
@@ -148,9 +144,30 @@ public class Player : MonoBehaviour
 
     void CalculateMovement()
     {
-        Vector3 direction = new Vector3(0, 0, Input.GetAxis("Vertical"));
-        Mathf.Lerp(_maxVelocity, 0, increasedValue);
-        _velocity = direction * increasedValue;
+        // creo una variable temporal para almacenar la velocidad dependiendo 
+        // si está frenando o acelerando
+        float currenVelocity = 0;
+        //Creo un vector con la dirección 
+        Vector3 direction = new Vector3(0, 0, Input.GetAxis("Acelerate"));
+
+        //incremento la velocidad hasta el maximo y la guardo en una variable
+        //estática
+
+        //en caso de frenar
+        if (Input.GetKey(KeyCode.F) || Input.GetKey(KeyCode.JoystickButton1))
+        {
+            Debug.Log(increasedVelocity);
+        }
+        else
+        { 
+        Mathf.Lerp(_maxVelocity, 0, increasedVelocity);
+        //asignamos la velocidad actual a la 
+        currenVelocity = increasedVelocity;
+        }
+
+        //asígno los valores al vector de velocidad, multiplicando la dirección por la velocidad
+        _velocity = direction * currenVelocity;
+
 
         if (direction.z > 0)
         {
@@ -160,59 +177,47 @@ public class Player : MonoBehaviour
             _PostProcessingBehaviour.profile.chromaticAberration.settings = chaSettings;
 
 
-            increasedValue += 5f * Time.deltaTime;
-            if (increasedValue > _maxVelocity)
-            {
-                increasedValue = _maxVelocity;
-            }
+            increasedVelocity += 5f * Time.deltaTime;
 
-            if (Input.GetKey(KeyCode.F))
+            if (currenVelocity > _maxVelocity)
             {
-
-                //_Animator.SetBool("Frenado", true);
-                _velocity = direction * Mathf.Lerp(_velocity.z, 0, decreasedValue);
-                decreasedValue += .5f * Time.deltaTime;
-            }
-            else
-            {
-                //_Animator.SetBool("Frenado", false);
-                decreasedValue = 0.0f;
+                currenVelocity = _maxVelocity;
             }
         }
         else
         {
-
-            increasedValue = 0.0f;
+            currenVelocity = 0.0f;
         }
 
-
-        //Debug.Log(increasedValue);
         _velocity.y -= _Gravity;
 
         _velocity = transform.transform.TransformDirection(_velocity);
 
         _Controller.Move(_velocity * Time.deltaTime);
-        // foreach (Transform wheel in _Wheels)
-        // {
-        //    wheel.rotation = Quaternion.FromToRotation(Vector3.up, transform.forward);
-        // }
     }
 
     void CameraRotation()
     {
-        float MouseX = Input.GetAxis("Mouse X");
+        float MouseX = Input.GetAxis("Horizontal");
         Vector3 newRotation = transform.eulerAngles;
         newRotation.y += MouseX * _Sensitivity;
         transform.localEulerAngles = newRotation;
 
         //Queremos hacer que la camará cambie su posición en z al acelerar
         //Obtenemos primero los datos de la aceleración
-        float temp_a = Input.GetAxis("Vertical");
+        float temp_a = Input.GetAxis("Acelerate");
         float max = -3.5f;
         if (temp_a > 0)
         {
-            Camera.main.transform.localPosition = new Vector3(0, 1.5f, max - temp_a);
+            _CurrentCamera.transform.localPosition = new Vector3(0, 1.5f, max - temp_a);
         }
+
+    }
+
+    void brake(Vector3 direction)
+    {
+        _velocity = direction * Mathf.Lerp(_velocity.z, 0, decreasedValue);
+        decreasedValue += .5f * Time.deltaTime;
 
     }
 
@@ -313,29 +318,43 @@ public class Player : MonoBehaviour
 
             float percent = _maxVelocity / 2;
 
-            increasedValue = (_maxVelocity + percent);
+            increasedVelocity = (_maxVelocity + percent);
 
 
-            Debug.Log("Usando Boost" + increasedValue);
+            Debug.Log("Usando Boost" + increasedVelocity);
         }
         else
         {
-            Debug.Log("No tienes suficientes puntos para usar Boost" + increasedValue);
+            Debug.Log("No tienes suficientes puntos para usar Boost" + increasedVelocity);
             _maxVelocity = 90f;
         }
     }
 
-    // void ReloadEnergy()
-    // {
-    //         Mathf.Lerp(energy, maxEnergy, EnergyIncrement);
-    //         EnergyIncrement += 0.5f;//* Time.deltaTime;
+    void rearview()
+    {
+        if (Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.JoystickButton3))
+        {
+            _Cameras[0].SetActive(false);
+            _Cameras[1].SetActive(true);
+            _CurrentCamera = _Cameras[1];
+        }
+        else
+        {
+            _Cameras[0].SetActive(true);
+            _Cameras[1].SetActive(false);
+            _CurrentCamera = _Cameras[0];
 
-    //         if (EnergyIncrement >= maxEnergy)
-    //         {
-    //             EnergyIncrement = maxEnergy;
-    //         }
-    //         Debug.Log(EnergyIncrement + " " + _isReloadingEnergy);
-    // }
+        }
+
+
+    }
+
+    void SelectPowerUp()
+    {
+        //MisilePowerUp();
+        //BoostPowerUp();
+        //MinesPowerUp();
+    }
 
     IEnumerator ReloadEnergy()
     {
