@@ -351,9 +351,9 @@ public class Player : MonoBehaviour
 
             yield return null;
         }
-        var explosion = Instantiate(_Effects[1], misile.transform.position, misile.transform.rotation);
+        //var explosion = Instantiate(_Effects[1], misile.transform.position, misile.transform.rotation);
         Destroy(misile, 3f);
-        Destroy(explosion, 3f);
+        //Destroy(explosion, 3f);
         print("Se ha alcanzado el objetivo.");
 
         yield return new WaitForSeconds(3f);
