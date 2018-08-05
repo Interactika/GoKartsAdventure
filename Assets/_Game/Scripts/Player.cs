@@ -150,21 +150,16 @@ public class Player : MonoBehaviour
         //Creo un vector con la dirección 
         Vector3 direction = new Vector3(0, 0, Input.GetAxis("Acelerate"));
 
-        //incremento la velocidad hasta el maximo y la guardo en una variable
-        //estática
-
         //en caso de frenar
         if (Input.GetKey(KeyCode.F) || Input.GetKey(KeyCode.JoystickButton1))
         {
-            Debug.Log(increasedVelocity);
+            direction = new Vector3(0, 0, Input.GetAxis("Brake"));
+
         }
-        else
-        { 
+        
         Mathf.Lerp(_maxVelocity, 0, increasedVelocity);
         //asignamos la velocidad actual a la 
         currenVelocity = increasedVelocity;
-        }
-
         //asígno los valores al vector de velocidad, multiplicando la dirección por la velocidad
         _velocity = direction * currenVelocity;
 
@@ -216,8 +211,6 @@ public class Player : MonoBehaviour
 
     void brake(Vector3 direction)
     {
-        _velocity = direction * Mathf.Lerp(_velocity.z, 0, decreasedValue);
-        decreasedValue += .5f * Time.deltaTime;
 
     }
 
