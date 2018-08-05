@@ -18,11 +18,11 @@ public class Car_Control : MonoBehaviour
     {
         float v = Input.GetAxis("Acelerate") * MotorForce;
 
-        // if(Input.GetKey(KeyCode.JoystickButton1))
-        // {
-        // 	v  = Input.GetAxis("Brake")* MotorForce;
-        // 	Debug.Log(v);
-        // }
+        if(Input.GetKey(KeyCode.JoystickButton1))
+        {
+        	v  = Input.GetAxis("Brake") * MotorForce;
+        	Debug.Log(v);
+        }
 
         float h = Input.GetAxis("Horizontal") * SteerForce;
 

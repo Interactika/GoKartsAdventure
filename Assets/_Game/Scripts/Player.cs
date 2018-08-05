@@ -6,11 +6,15 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-
+    [Header("Camera Setup")]
     [SerializeField]
     private GameObject[] _Cameras;
     [SerializeField]
+    [Header("PostProcessing Setup")]
     private PostProcessingBehaviour _PostProcessingBehaviour;
+
+    [Header("Effects Setup")]
+
     [SerializeField]
     private Transform _ShootOutPos;
     [SerializeField]
@@ -24,16 +28,15 @@ public class Player : MonoBehaviour
 
     [SerializeField]
     int _currentAmmo;
+
+    [Header("UI Setup")]
+
     [SerializeField]
-    private Slider _AmmoSlider;
-    private CharacterController _Controller;
+    private Player_UI _PlayerUI;
     private AudioSource _AudioSource;
-    private static float decreasedValue = 0.0f;
     private static float increasedVelocity = 0.0f;
-    private static float EnergyIncrement = 0.0f;
     protected float _maxVelocity = 90f;
     private float _Sensitivity = 2f;
-    private float _Gravity = 9.81f;
     private float _canShoot;
     private float energy = 0f;
     private float maxEnergy = 100.0f;
@@ -41,14 +44,13 @@ public class Player : MonoBehaviour
     private int _maxAmmo = 100;
 
     private float _canReloadEnergy;
-    private float _delay = 3.0f;
 
     private bool _reloadingMachineGun = false;
     private bool _isReloadingEnergy = false;
-    private bool _HasExploded = false;
-    private Vector3 _velocity;
     private GameObject _CurrentCamera;
-
+    private int selection = 0;
+    delegate void PowerUp();
+    PowerUp _currentPowerUp;
 
 
     // Use this for initialization
@@ -57,19 +59,22 @@ public class Player : MonoBehaviour
         Cursor.visible = false;
         energy = maxEnergy;
         Cursor.lockState = CursorLockMode.Locked;
-        //_Controller = GetComponent<CharacterController>();
         _AudioSource = GetComponent<AudioSource>();
-        //_Animator = GetComponent<Animator>();
         _currentAmmo = _maxAmmo;
-        _AmmoSlider.value = _currentAmmo;
+        _PlayerUI.SetEnergy(energy);
     }
 
     // Update is called once per frame
     void Update()
-    {
+    {   
+        _PlayerUI.GetData(100,_currentAmmo);
+        //Asiganmos las camaras
         rearview();
-
-
+        SelectPowerUp();
+        /*
+        si el usuario quiere salir puede presionar la tecla escape
+        y volver a esconder el mouse con click
+        */
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;
@@ -80,11 +85,17 @@ public class Player : MonoBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
-        _AmmoSlider.value = _currentAmmo;
 
-        bool shoot = (Input.GetMouseButton(0) || Input.GetAxis("Shoot") > 0 );
+        // Actualizar la cuenta de las balas
+
+
+        //ya sea si presionas el boton izquierdo del raton o el gatillo derecho
+        bool shoot = (Input.GetMouseButton(0) || Input.GetAxis("Shoot") > 0);
+
+        //Si shoot es true y las balas son mayores que cero
         if (shoot && _currentAmmo > 0)
         {
+            //Dispara activa efectos y sonido
             Shoot();
             _Effects[2].SetActive(true);
             var bulletEject = _Effects[2].GetComponent<ParticleSystem>();
@@ -95,11 +106,14 @@ public class Player : MonoBehaviour
 
         }
         else
+        //de lo contrario se desactivan 
         {
             _MachineGunLight.SetActive(false);
             _Effects[2].SetActive(false);
-
             _AudioSource.Stop();
+
+
+            //si nos quedamos sin municion y no está recargando
             if (_currentAmmo <= 0 && !_reloadingMachineGun)
             {
                 _reloadingMachineGun = true;
@@ -108,16 +122,18 @@ public class Player : MonoBehaviour
 
         }
 
+        // se ejecuta la rotación de la cámara
         CameraRotation();
+
+
 
         if (Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.JoystickButton2))
         {
             //disparar powerUps
-            Debug.Log("PowerUp");
+            _currentPowerUp();
         }
 
         // cada 5 segundos checar si la energía está en 100
-
         if (Time.time > _canReloadEnergy)
         {
             if (energy < 100f && !_isReloadingEnergy)
@@ -203,6 +219,7 @@ public class Player : MonoBehaviour
                 if (item.tag == "Enemy")
                 {
                     energy -= 80;
+                    _PlayerUI.SetEnergy(energy);
                     Debug.Log("Se ha encontrado un enemigo");
                     var misile = Instantiate(_Projectiles[0], _ShootOutPos.position, _ShootOutPos.rotation);
                     //misile.GetComponent<Rigidbody>().velocity = transform.up * 50;
@@ -216,7 +233,6 @@ public class Player : MonoBehaviour
                     print("No se encontró objetivo");
                 }
             }
-
             Debug.Log("Usando misil" + energy);
         }
         else
@@ -232,7 +248,7 @@ public class Player : MonoBehaviour
         if (energy > 0 && energy > 30)
         {
             energy -= 30;
-
+            _PlayerUI.SetEnergy(energy);
             Debug.Log("Usando Minas");
         }
         else
@@ -247,7 +263,7 @@ public class Player : MonoBehaviour
         if (energy > 0 && energy > 15)
         {
             energy -= 15 * Time.deltaTime;
-
+            _PlayerUI.SetEnergy(energy);
             float percent = _maxVelocity / 2;
 
             increasedVelocity = (_maxVelocity + percent);
@@ -282,7 +298,38 @@ public class Player : MonoBehaviour
     }
 
     void SelectPowerUp()
-    {
+    {   
+        
+        bool leftDumper = Input.GetKeyDown(KeyCode.JoystickButton4);
+        bool rigthDumper = Input.GetKeyDown(KeyCode.JoystickButton5);
+
+        if (rigthDumper)
+        {
+            selection++;
+        }
+        if(leftDumper)
+        {
+            selection--;
+        }
+
+        if (selection > 2 || selection < 0)
+        {
+            selection = 0;
+        }
+
+        switch (selection)
+        {
+            case 0:
+            _currentPowerUp = MisilePowerUp;
+            break;
+            case 1:
+            _currentPowerUp = BoostPowerUp;
+            break;
+            case 2:
+            _currentPowerUp = MinesPowerUp;
+            break;
+        }
+        
         //MisilePowerUp();
         //BoostPowerUp();
         //MinesPowerUp();
@@ -292,6 +339,7 @@ public class Player : MonoBehaviour
     {
         yield return new WaitForSeconds(5f);
         energy = maxEnergy;
+        _PlayerUI.SetEnergy(energy);
         _isReloadingEnergy = false;
     }
 
