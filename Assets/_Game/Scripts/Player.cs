@@ -26,8 +26,6 @@ public class Player : MonoBehaviour
     int _currentAmmo;
     [SerializeField]
     private Slider _AmmoSlider;
-    [SerializeField]
-    private Transform Wheels;
     private CharacterController _Controller;
     private AudioSource _AudioSource;
     private static float decreasedValue = 0.0f;
@@ -49,7 +47,6 @@ public class Player : MonoBehaviour
     private bool _isReloadingEnergy = false;
     private bool _HasExploded = false;
     private Vector3 _velocity;
-    private List<Transform> _Wheels = new List<Transform>();
     private GameObject _CurrentCamera;
 
 
@@ -60,15 +57,11 @@ public class Player : MonoBehaviour
         Cursor.visible = false;
         energy = maxEnergy;
         Cursor.lockState = CursorLockMode.Locked;
-        _Controller = GetComponent<CharacterController>();
+        //_Controller = GetComponent<CharacterController>();
         _AudioSource = GetComponent<AudioSource>();
         //_Animator = GetComponent<Animator>();
         _currentAmmo = _maxAmmo;
         _AmmoSlider.value = _currentAmmo;
-        foreach (Transform item in Wheels)
-        {
-            _Wheels.Add(item);
-        }
     }
 
     // Update is called once per frame
@@ -88,7 +81,9 @@ public class Player : MonoBehaviour
             Cursor.visible = false;
         }
         _AmmoSlider.value = _currentAmmo;
-        if (Input.GetMouseButton(0) || Input.GetAxis("Shoot") > 0 && _currentAmmo > 0)
+
+        bool shoot = (Input.GetMouseButton(0) || Input.GetAxis("Shoot") > 0 );
+        if (shoot && _currentAmmo > 0)
         {
             Shoot();
             _Effects[2].SetActive(true);
@@ -114,7 +109,6 @@ public class Player : MonoBehaviour
         }
 
         CameraRotation();
-        CalculateMovement();
 
         if (Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.JoystickButton2))
         {
@@ -141,61 +135,6 @@ public class Player : MonoBehaviour
             _canReloadEnergy = Time.time + 5f;
         }
     }
-
-    void CalculateMovement()
-    {
-        // creo una variable temporal para almacenar la velocidad dependiendo 
-        // si está frenando o acelerando
-        float currenVelocity = 0;
-        //Creo un vector con la dirección 
-        Vector3 direction = new Vector3(0, 0, Input.GetAxis("Acelerate"));
-
-        //incremento la velocidad hasta el maximo y la guardo en una variable
-        //estática
-
-        //en caso de frenar
-        if (Input.GetKey(KeyCode.F) || Input.GetKey(KeyCode.JoystickButton1))
-        {
-            Debug.Log(increasedVelocity);
-        }
-        else
-        { 
-        Mathf.Lerp(_maxVelocity, 0, increasedVelocity);
-        //asignamos la velocidad actual a la 
-        currenVelocity = increasedVelocity;
-        }
-
-        //asígno los valores al vector de velocidad, multiplicando la dirección por la velocidad
-        _velocity = direction * currenVelocity;
-
-
-        if (direction.z > 0)
-        {
-            ChromaticAberrationModel.Settings chaSettings = _PostProcessingBehaviour.profile.chromaticAberration.settings;
-            chaSettings.intensity = direction.z;
-
-            _PostProcessingBehaviour.profile.chromaticAberration.settings = chaSettings;
-
-
-            increasedVelocity += 5f * Time.deltaTime;
-
-            if (currenVelocity > _maxVelocity)
-            {
-                currenVelocity = _maxVelocity;
-            }
-        }
-        else
-        {
-            currenVelocity = 0.0f;
-        }
-
-        _velocity.y -= _Gravity;
-
-        _velocity = transform.transform.TransformDirection(_velocity);
-
-        _Controller.Move(_velocity * Time.deltaTime);
-    }
-
     void CameraRotation()
     {
         float MouseX = Input.GetAxis("Horizontal");
@@ -206,18 +145,11 @@ public class Player : MonoBehaviour
         //Queremos hacer que la camará cambie su posición en z al acelerar
         //Obtenemos primero los datos de la aceleración
         float temp_a = Input.GetAxis("Acelerate");
-        float max = -3.5f;
+        float max = -5f;
         if (temp_a > 0)
         {
-            _CurrentCamera.transform.localPosition = new Vector3(0, 1.5f, max - temp_a);
+            _CurrentCamera.transform.localPosition = new Vector3(0, .8f, max - temp_a);
         }
-
-    }
-
-    void brake(Vector3 direction)
-    {
-        _velocity = direction * Mathf.Lerp(_velocity.z, 0, decreasedValue);
-        decreasedValue += .5f * Time.deltaTime;
 
     }
 
